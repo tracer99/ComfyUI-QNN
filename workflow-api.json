@@ -1,0 +1,20 @@
+{
+  "1": {
+    "class_type": "SnapdragonSD15",
+    "inputs": {
+      "model": "sd15",
+      "prompt": "a red ceramic teapot on a wooden table, studio photography",
+      "negative_prompt": "",
+      "seed": 42,
+      "steps": 20,
+      "cfg": 7.5
+    }
+  },
+  "2": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": ["1", 0],
+      "filename_prefix": "qnn-sd15"
+    }
+  }
+}

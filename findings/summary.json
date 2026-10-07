@@ -1,0 +1,45 @@
+{
+  "completed": {
+    "qnn": 36,
+    "directml": 22
+  },
+  "paired_images": 22,
+  "settings": {
+    "steps": 20,
+    "cfg": 7.5,
+    "size": "512x512"
+  },
+  "backends": {
+    "qnn": {
+      "median_seconds": 4.9136043500002415,
+      "mean_seconds": 4.9028260772727,
+      "min_seconds": 4.746096200000466,
+      "max_seconds": 5.145153499999651,
+      "p95_seconds": 5.035072395000862,
+      "mean_joules_per_image": 85.48826758974249,
+      "generation_average_watts": 17.43579672752438,
+      "mean_idle_watts": 11.818999999999999,
+      "load_seconds": 3.5120723999989423,
+      "mean_text_seconds": 0.009225486363737384,
+      "mean_denoise_seconds": 4.662141763636348,
+      "mean_decode_seconds": 0.23145882727261446
+    },
+    "directml": {
+      "median_seconds": 100.45901970000068,
+      "mean_seconds": 107.82924942272744,
+      "min_seconds": 93.03048610000042,
+      "max_seconds": 192.22179229999892,
+      "p95_seconds": 141.58255534499978,
+      "mean_joules_per_image": 1578.109141438058,
+      "generation_average_watts": 14.634413797213682,
+      "mean_idle_watts": 8.574333333333334,
+      "load_seconds": 6.483865899999728,
+      "mean_text_seconds": 0.23855315000012275,
+      "mean_denoise_seconds": 103.92921537272717,
+      "mean_decode_seconds": 3.66148090000016
+    }
+  },
+  "median_speedup": 20.445077084807558,
+  "energy_ratio": 18.45994995490365,
+  "energy_reduction_percent": 94.58286722096794
+}

@@ -1,0 +1,2 @@
+# Host dependencies are supplied by ComfyUI.
+# Install requirements-worker.txt only in the separate ARM64 Python environment.

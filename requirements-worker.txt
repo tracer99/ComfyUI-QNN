@@ -1,0 +1,7 @@
+# Isolated ARM64 Python 3.11 worker; ComfyUI keeps its existing runtime.
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.10.0+cpu
+qai-appbuilder==2.50.40
+transformers==4.57.6
+diffusers==0.35.1
+numpy>=1.26.4
