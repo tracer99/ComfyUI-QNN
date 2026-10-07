@@ -3,6 +3,7 @@
 import argparse
 import asyncio
 import json
+import os
 from pathlib import Path
 import sys
 import tempfile
@@ -85,13 +86,30 @@ def main():
         module = sys.modules[node.__module__]
         original_popen = module.subprocess.Popen
         processes = []
+        child_pids = set()
+
+        def windows_processes():
+            command = ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", "Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId | ConvertTo-Json -Compress"]
+            with original_popen(command, stdout=module.subprocess.PIPE, creationflags=module.subprocess.CREATE_NO_WINDOW) as query:
+                output, _ = query.communicate(timeout=30)
+            assert query.returncode == 0
+            return json.loads(output)
 
         def start_worker(*args, **kwargs):
             process = original_popen(*args, **kwargs)
             processes.append(process)
+            if os.name == "nt":
+                snapshot = windows_processes()
+                descendants = {process.pid}
+                while True:
+                    children = {entry["ProcessId"] for entry in snapshot if entry["ParentProcessId"] in descendants}
+                    if children.issubset(descendants):
+                        break
+                    descendants.update(children)
+                child_pids.update(descendants - {process.pid})
             return process
 
-        timer = threading.Timer(1, management.interrupt_current_processing)
+        timer = threading.Timer(3 if os.name == "nt" else 1, management.interrupt_current_processing)
         timer.start()
         try:
             with patch.object(module.subprocess, "Popen", side_effect=start_worker):
@@ -109,6 +127,9 @@ def main():
             timer.join()
             management.interrupt_current_processing(False)
         assert processes and all(process.poll() is not None for process in processes)
+        if os.name == "nt":
+            assert not child_pids.intersection(entry["ProcessId"] for entry in windows_processes()), "Worker child survived cancellation"
+            result["worker_children_checked"] = len(child_pids)
         result["worker_cleanup"] = "passed"
     print(json.dumps(result, indent=2))
 

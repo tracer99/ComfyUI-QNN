@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1
+
+- Stop the complete Windows worker process tree on cancellation, including the virtual-environment launcher's child Python process.
+- Verify child-process cleanup in hardware cancellation checks.
+
 ## 0.2.0
 
 - Rename the project to ComfyUI-QNN and the installation folder to comfyui_qnn.

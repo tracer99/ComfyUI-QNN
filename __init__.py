@@ -80,7 +80,10 @@ class SnapdragonSD15(io.ComfyNode):
                             pass
                 finally:
                     if process.poll() is None:
-                        process.kill()
+                        if os.name == "nt":
+                            subprocess.run(["taskkill", "/PID", str(process.pid), "/T", "/F"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=subprocess.CREATE_NO_WINDOW)
+                        else:
+                            process.kill()
                     process.wait()
             if process.returncode:
                 raise RuntimeError(f"{cls.display_name} failed:\n" + (directory / "worker.log").read_text(encoding="utf-8")[-4000:])

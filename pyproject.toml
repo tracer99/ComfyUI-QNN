@@ -1,6 +1,6 @@
 [project]
 name = "comfyui-qnn"
-version = "0.2.0"
+version = "0.2.1"
 description = "Optional Snapdragon NPU SD 1.5 and SDXL nodes for ComfyUI"
 readme = "README.md"
 requires-python = ">=3.11"
