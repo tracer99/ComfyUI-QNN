@@ -20,13 +20,13 @@ def build(output, tag=None):
         raise ValueError(f"Tag {tag!r} must match v{version} in pyproject.toml.")
     output = Path(output)
     output.mkdir(parents=True, exist_ok=True)
-    archive = output / f"comfyui-qnn-sd15-{version}.zip"
+    archive = output / f"comfyui-qnn-{version}.zip"
     with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as package:
         for name in sorted(config["tool"]["release"]["files"]):
             source = ROOT / name
             if not source.resolve().is_relative_to(ROOT.resolve()):
                 raise ValueError(f"Release file escapes project: {name}")
-            entry = zipfile.ZipInfo("comfyui_qnn_sd15/" + name, date_time=(2020, 1, 1, 0, 0, 0))
+            entry = zipfile.ZipInfo("comfyui_qnn/" + name, date_time=(2020, 1, 1, 0, 0, 0))
             entry.compress_type = zipfile.ZIP_DEFLATED
             entry.external_attr = 0o100644 << 16
             package.writestr(entry, source.read_bytes(), compresslevel=9)

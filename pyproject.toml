@@ -1,23 +1,29 @@
 [project]
-name = "comfyui-qnn-sd15"
-version = "0.1.0"
-description = "Optional Qualcomm Snapdragon X Elite SD 1.5 node for ComfyUI"
+name = "comfyui-qnn"
+version = "0.2.0"
+description = "Optional Snapdragon NPU SD 1.5 and SDXL nodes for ComfyUI"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { file = "LICENSE" }
 dependencies = []
 
 [project.urls]
-Repository = "https://github.com/tracer99/ComfyUI-QNN-SD15"
-Issues = "https://github.com/tracer99/ComfyUI-QNN-SD15/issues"
+Repository = "https://github.com/tracer99/ComfyUI-QNN"
+Issues = "https://github.com/tracer99/ComfyUI-QNN/issues"
 
 [tool.comfy]
-DisplayName = "Snapdragon SD 1.5"
+DisplayName = "Snapdragon Diffusion for ComfyUI"
 
 [tool.release]
 files = [
     "__init__.py",
     "qnn_sd15.py",
+    "qnn_sdxl.py",
+    "requirements-sdxl-worker.txt",
+    "tools/download_sdxl.py",
+    "NOTICE",
+    "workflow-sdxl.json",
+    "workflow-sdxl-api.json",
     "pyproject.toml",
     "requirements.txt",
     "requirements-worker.txt",

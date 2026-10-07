@@ -1,0 +1,23 @@
+{
+  "1": {
+    "class_type": "SnapdragonSDXL",
+    "inputs": {
+      "model": "dreamshaper-xl-lightning",
+      "prompt": "a red ceramic teapot on a wooden table, studio photography",
+      "negative_prompt": "",
+      "seed": 42,
+      "steps": 6,
+      "cfg": 2.0
+    }
+  },
+  "2": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "1",
+        0
+      ],
+      "filename_prefix": "qnn-sdxl"
+    }
+  }
+}
