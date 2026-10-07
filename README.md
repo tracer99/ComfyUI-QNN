@@ -1,37 +1,62 @@
-# Snapdragon SD 1.5 for ComfyUI
+# Snapdragon Diffusion for ComfyUI
 
-Experimental, optional custom node for Qualcomm's precompiled Snapdragon X Elite SD 1.5 w8a16 bundle. Generates one 512×512 IMAGE; connect it to Preview Image or Save Image. The worker uses the NPU with no CPU fallback or network requests.
+Optional custom nodes for Snapdragon X Elite NPU text-to-image generation. `SnapdragonSD15` generates 512×512; `SnapdragonSDXL` generates 1024×1024 using DreamShaper XL Lightning. Connect either IMAGE output to Preview Image or Save Image. The workers run locally on the NPU with CPU fallback disabled.
 
 ## Install
 
-From your ComfyUI directory, clone the standalone repository into `custom_nodes`:
+From your ComfyUI directory:
 
 ```powershell
-git clone https://github.com/tracer99/ComfyUI-QNN-SD15.git custom_nodes/comfyui_qnn_sd15
+git clone https://github.com/tracer99/ComfyUI-QNN.git custom_nodes/comfyui_qnn
 ```
 
-Create a separate environment using **native ARM64 Python 3.11**, then install its worker dependencies (replace the interpreter path):
+Upgrading from 0.1.0: close ComfyUI, move `custom_nodes/comfyui_qnn_sd15` outside `custom_nodes`, then install the new folder. Keep only one copy. The `SnapdragonSD15` node ID and its workflow inputs are unchanged. GitHub redirects the old repository URL to the new name.
+
+Use native **ARM64 Python 3.11** for the workers; your ComfyUI host can continue using x64 DirectML. The ARM fork is not required by this extension. ComfyUI must support the V3 node API.
+
+### SD 1.5
 
 ```powershell
 & 'C:/path/to/arm64/python.exe' -m venv .venv-qnn
-.venv-qnn/Scripts/python.exe -m pip install -r custom_nodes/comfyui_qnn_sd15/requirements-worker.txt
+.venv-qnn/Scripts/python.exe -m pip install -r custom_nodes/comfyui_qnn/requirements-worker.txt
 ```
 
-An existing worker environment can be selected with `COMFYUI_QNN_PYTHON`, set to its full `python.exe` path before starting ComfyUI. Keep these dependencies out of the ComfyUI host environment. The host may use x64 DirectML; the ARM fork is not required by this extension, but the host must support the ComfyUI V3 node API.
+Manually obtain the [Qualcomm SD 1.5 X Elite bundle](https://huggingface.co/qualcomm/Stable-Diffusion-v1.5): validated release v0.64.0, QAIRT 2.50, w8a16. Put `text_encoder.bin`, `unet.bin`, and `vae.bin` in `models/qnn/sd15/`. Put `vocab.json`, `merges.txt`, `tokenizer_config.json`, and `special_tokens_map.json` from [the source tokenizer](https://huggingface.co/stable-diffusion-v1-5/stable-diffusion-v1-5/tree/451f4fe16113bff5a5d2269ed5ad43b0592e9a14/tokenizer) in `models/qnn/sd15/tokenizer/`.
 
-For a versioned installation, download the ZIP from [Releases](https://github.com/tracer99/ComfyUI-QNN-SD15/releases), verify its accompanying SHA-256 checksum, and extract its `comfyui_qnn_sd15` folder into `custom_nodes`. Root `requirements.txt` intentionally has no host dependencies; `requirements-worker.txt` is installed manually into the ARM64 worker environment. The ZIP contains no models or runtime binaries.
+Import `workflow.json` for SD 1.5; `workflow-api.json` is its API prompt. An existing worker can be selected with `COMFYUI_QNN_PYTHON` pointing to its full `python.exe` path.
 
-Manually obtain the [Qualcomm SD 1.5 X Elite bundle](https://huggingface.co/qualcomm/Stable-Diffusion-v1.5). Validated release: v0.64.0, QAIRT 2.50, X Elite, w8a16. Put `text_encoder.bin`, `unet.bin`, and `vae.bin` in `models/qnn/sd15/`. Put `vocab.json`, `merges.txt`, `tokenizer_config.json`, and `special_tokens_map.json` from [the source tokenizer](https://huggingface.co/stable-diffusion-v1-5/stable-diffusion-v1-5/tree/451f4fe16113bff5a5d2269ed5ad43b0592e9a14/tokenizer) in `models/qnn/sd15/tokenizer/`.
+### SDXL
 
-Restart ComfyUI and drag `workflow.json` into the canvas. Select `sd15`, edit the prompt, and queue the workflow. `workflow-api.json` is the equivalent API prompt. If the interpreter is missing, check `COMFYUI_QNN_PYTHON`; if HTP fails, check that the model bundle and runtime match this device.
+```powershell
+& 'C:/path/to/arm64/python.exe' -m venv .venv-qnn-sdxl
+.venv-qnn-sdxl/Scripts/python.exe -m pip install -r custom_nodes/comfyui_qnn/requirements-sdxl-worker.txt
+.venv-qnn-sdxl/Scripts/python.exe custom_nodes/comfyui_qnn/tools/download_sdxl.py --destination models/qnn/dreamshaper-xl-lightning
+```
+
+The last command explicitly downloads approximately 7 GB from [the compiled DreamShaper XL Lightning bundle](https://huggingface.co/Buuta/dreamshaper-xl-lightning-for-Snapdragon-X-Elite/tree/09fdf512425d746f4105299ecb46a4bcffa28632), pinned to revision `09fdf512425d746f4105299ecb46a4bcffa28632`. It verifies available artifact SHA-256 checksums and file sizes. Nodes never initiate downloads. For offline installation, copy exactly these files into the bundle folder:
+
+```text
+text_encoder/{model.onnx,model.bin}
+text_encoder_2/{model.onnx,model.bin}
+unet/part0/{model.onnx,model.bin}
+unet/part1/{model.onnx,model.bin}
+unet/part2/{model.onnx,model.bin}
+unet/part3/{model.onnx,model.bin}
+unet/part4/{model.onnx,model.bin}
+vae_decoder/1024x1024/{model.onnx,model.bin}
+tokenizer/{vocab.json,merges.txt,tokenizer_config.json,special_tokens_map.json}
+tokenizer_2/{vocab.json,merges.txt,tokenizer_config.json,special_tokens_map.json}
+```
+
+Restart ComfyUI and import `workflow-sdxl.json`; `workflow-sdxl-api.json` is its API prompt. Start with 6 steps and CFG 2. Both required text encoders are internal and share the prompt fields. Resolution is fixed by the compiled bundle and shown in the node name. An existing worker can be selected with `COMFYUI_QNN_SDXL_PYTHON` pointing to its ARM64 `python.exe`.
+
+Missing model errors name the required file. Missing interpreter errors identify the environment variable. If QNN cannot find an NPU or load a context, check Snapdragon drivers and the pinned worker dependencies. SDXL releases encoder sessions before loading the UNet and releases the UNet before decoding to reduce NPU memory pressure.
 
 ## Scope
 
-Text-to-image only: fixed resolution, one image, DPM-Solver++ multistep sampling, prompt, negative prompt, seed, steps, and CFG. Arbitrary checkpoints, SDXL, LoRA, ControlNet, img2img, and integration with KSampler are outside this initial version. The model truncates prompts to 77 tokens.
+One image per execution; prompts, negative prompts, seed, steps, and CFG. SD 1.5 uses DPM-Solver++ multistep sampling; SDXL uses the reference Euler scheduler with leading timesteps. Compiled prompts are limited to 77 tokens. Arbitrary checkpoints/resolutions, LoRA, ControlNet, img2img, and KSampler integration are not supported.
 
-Each execution starts and releases its worker and model contexts, so startup and model loading are paid for every execution.
-
-The [existing community SDXL nodes](https://github.com/buuta-buta-butaata/SDXL-with-Snapdragon-X-Elite-NPU/tree/main/ComfyUI/custom_nodes/onnxruntime-qnn-nodes), inspected at revision `2f65bbea8f546cf26bd7378d1aab5ee39c9fbc5b`, require five ONNX UNet parts, dual CLIP encoders, and SDXL conditioning. They cannot load this three-file SD 1.5 context-binary bundle. Supporting it there would require a separate model path; this small package keeps that path optional and independently reviewable.
+Workers and model sessions are released after each execution, including cancellation. Model loading is paid again on the next execution. The separate SDXL worker avoids provider-registration conflicts with QNN extensions in the host.
 
 ## Partial benchmark findings
 
@@ -54,6 +79,6 @@ These partial findings support optional SD 1.5 support on this machine. They do 
 
 ## Development and releases
 
-Version metadata lives in `pyproject.toml`. See [RELEASING.md](RELEASING.md) for CPU tests, reproducible ZIP packaging, hardware smoke checks, and the tag-triggered draft prerelease workflow. ComfyUI Registry publication is not configured.
+Version metadata lives in `pyproject.toml`. See [RELEASING.md](RELEASING.md) for CPU tests, reproducible ZIP packaging, hardware smoke checks, and tag-triggered draft prereleases. Release ZIPs contain the `comfyui_qnn` folder, no models or runtimes. Verify the accompanying SHA-256 before extraction. Root `requirements.txt` intentionally installs no host dependencies. ComfyUI Registry publication is not configured.
 
-Source code is licensed under [GPL-3.0](LICENSE). Qualcomm models and runtime packages retain their own licenses and must be obtained separately.
+Source is [GPL-3.0](LICENSE). SDXL graph wiring follows the [community reference](https://github.com/buuta-buta-butaata/SDXL-with-Snapdragon-X-Elite-NPU) at revision `2f65bbea8f546cf26bd7378d1aab5ee39c9fbc5b`; see [NOTICE](NOTICE). Models and runtimes retain their own licenses and must be obtained separately.

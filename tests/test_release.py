@@ -19,13 +19,13 @@ class ReleaseTests(unittest.TestCase):
             checksum = archive.with_suffix(".zip.sha256").read_text().split()[0]
             self.assertEqual(checksum, hashlib.sha256(archive.read_bytes()).hexdigest())
             with zipfile.ZipFile(archive) as package:
-                expected = {"comfyui_qnn_sd15/" + name for name in config["tool"]["release"]["files"]}
+                expected = {"comfyui_qnn/" + name for name in config["tool"]["release"]["files"]}
                 self.assertEqual(set(package.namelist()), expected)
                 self.assertIsNone(package.testzip())
                 for name in package.namelist():
                     self.assertNotIn("..", Path(name).parts)
                     self.assertFalse(name.endswith((".bin", ".safetensors", ".pyc")))
-                api = json.loads(package.read("comfyui_qnn_sd15/workflow-api.json"))
+                api = json.loads(package.read("comfyui_qnn/workflow-api.json"))
                 self.assertEqual(api["1"]["class_type"], "SnapdragonSD15")
                 self.assertEqual(api["2"]["inputs"]["images"], ["1", 0])
 
